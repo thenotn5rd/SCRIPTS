@@ -1,0 +1,166 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "N5RD The BEST SPEED HACK", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+
+-- Variável global de velocidade
+_G.SpeedEnabled = false
+_G.WS = 57 -- max 57
+local notificationVisible = false
+
+-- Função para ativar/desativar velocidade
+local function SetSpeed()
+    local Humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+    if Humanoid then
+        if _G.SpeedEnabled then
+            Humanoid.WalkSpeed = _G.WS
+            -- Conecta o sinal para manter a velocidade sempre ativada
+            Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if _G.SpeedEnabled then
+                    Humanoid.WalkSpeed = _G.WS
+                end
+            end)
+        else
+            Humanoid.WalkSpeed = 16 -- Velocidade padrão
+        end
+    end
+end
+
+-- Função para garantir que a velocidade seja reativada após reaparecer
+local function OnCharacterAdded(Character)
+    Character:WaitForChild("Humanoid") -- Aguarda o Humanoid ser adicionado ao personagem
+    SetSpeed() -- Aplica a velocidade assim que o personagem é adicionado
+end
+
+-- Listener para reaparecimento do personagem
+local Player = game:GetService("Players").LocalPlayer
+Player.CharacterAdded:Connect(OnCharacterAdded)
+
+-- Inicializa a função para o personagem atual
+if Player.Character then
+    OnCharacterAdded(Player.Character)
+end
+
+-- Notificação fixa
+local function showNotification()
+    if not notificationVisible then
+        OrionLib:MakeNotification({
+            Name = "Script Ativado",
+            Content = "Se inscreva no canal do N5RD (upset_white)",
+            Image = "rbxassetid://4483345998",
+            Time = 999999 -- Tempo infinito para manter a notificação visível
+        })
+        notificationVisible = true
+    end
+end
+
+-- Seção da GUI com toggle para ativar/desativar
+local Tab = Window:MakeTab({
+    Name = "Speed hack do N5RD",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+Tab:AddToggle({
+    Name = "Ativar Speed",
+    Default = false,
+    Callback = function(Value)
+        _G.SpeedEnabled = Value
+        SetSpeed()
+        if Value then
+            showNotification()
+        end
+    end
+})
+
+-- // Melhorado ESP Name e Box
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Função para criar ESP no jogador
+local function createESP(player)
+    local function applyESP(char)
+        -- Remover ESP antigo
+        if char:FindFirstChild("ESP") then
+            char:FindFirstChild("ESP"):Destroy()
+        end
+        if char:FindFirstChild("Head") and char.Head:FindFirstChild("NameESP") then
+            char.Head:FindFirstChild("NameESP"):Destroy()
+        end
+
+        -- Criar Highlight (Box)
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ESP"
+        highlight.Adornee = char
+        highlight.Parent = char
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.FillColor = Color3.new(1, 1, 1) -- Cor da caixa (Vermelho)
+        highlight.FillTransparency = 0.7
+        highlight.OutlineColor = Color3.new(1, 1, 1) -- Cor do contorno (Branco)
+        highlight.OutlineTransparency = 0
+
+        -- Criar Billboard (Nome)
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "NameESP"
+        billboard.Adornee = char:WaitForChild("Head")
+        billboard.Size = UDim2.new(0, 100, 0, 40)
+        billboard.StudsOffset = Vector3.new(0, 2, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = char.Head
+
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Parent = billboard
+        nameLabel.Size = UDim2.new(1, 0, 1, 0)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Text = player.Name
+        nameLabel.TextColor3 = Color3.new(1, 1, 1) -- Cor do nome (Branco)
+        nameLabel.TextSize = 10
+        nameLabel.Font = Enum.Font.SourceSansBold
+    end
+
+    -- Monitorar quando o jogador reaparece
+    player.CharacterAdded:Connect(function(char)
+        -- Espera o personagem carregar completamente
+        char:WaitForChild("Head")
+        applyESP(char)
+    end)
+
+    -- Aplicar ESP se o jogador já estiver com o personagem carregado
+    if player.Character then
+        applyESP(player.Character)
+    end
+end
+
+-- Função para remover o ESP
+local function removeESP(player)
+    if player.Character and player.Character:FindFirstChild("ESP") then
+        player.Character:FindFirstChild("ESP"):Destroy()
+    end
+    if player.Character and player.Character:FindFirstChild("Head") and player.Character.Head:FindFirstChild("NameESP") then
+        player.Character.Head:FindFirstChild("NameESP"):Destroy()
+    end
+end
+
+-- Função para ativar o ESP
+local function enableESP()
+    -- Aplicar ESP em todos os jogadores existentes
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then
+            createESP(player)
+        end
+    end
+
+    -- Aplicar ESP nos jogadores que entrarem depois
+    Players.PlayerAdded:Connect(function(player)
+        createESP(player)
+    end)
+
+    -- Remover ESP de jogadores que saírem
+    Players.PlayerRemoving:Connect(function(player)
+        removeESP(player)
+    end)
+end
+
+-- Ativando o ESP
+enableESP()
+
+-- Inicializando o OrionLib
+OrionLib:Init()
